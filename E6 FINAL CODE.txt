@@ -1,0 +1,115 @@
+#Import modules
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
+import warnings
+warnings.filterwarnings('ignore')
+import seaborn as sns #............................................................................for data visualization
+from sklearn.preprocessing import StandardScaler #.................................................for normalizing
+from sklearn.model_selection import train_test_split, cross_val_score #............................for data splitting
+from sklearn.metrics import confusion_matrix, precision_score ,auc, roc_curve #....................performance metrics
+import itertools #.................................................................................advanced tools
+from sklearn import tree, linear_model, neighbors, ensemble, discriminant_analysis #...............ML algorithms
+from sklearn.neighbors import KNeighborsClassifier #...............................................ML algorithms
+#Loading the dataset
+df = pd.read_csv('creditcard.csv')
+df.head()
+df.describe()
+df.head()
+df.tail()
+df.info()
+#Exploratory Data Analysis
+sns.countplot(data=df,x="Class")
+count = df["Class"].value_counts()
+plt.yticks(count)
+plt.show()
+df_temp = df.drop(columns=['Time', 'Amount', 'Class'], axis=1)
+# create dist plots
+fig, ax = plt.subplots(ncols=4, nrows=7, figsize=(20, 50))
+index = 0
+ax = ax.flatten()
+for col in df_temp.columns:
+    sns.distplot(df_temp[col], ax=ax[index])
+    index += 1
+plt.tight_layout(pad=0.5, w_pad=0.5, h_pad=5)
+sns.distplot(df['Time'])
+sns.distplot(df['Amount'])
+# Plot histograms of each parameter
+df.hist(figsize = (20, 20))
+plt.show()
+# Determine number of fraud cases in dataset
+Fraud = df[df['Class'] == 1]
+Valid = df[df['Class'] == 0]
+outlier_fraction = len(Fraud)/float(len(Valid))
+print(outlier_fraction)
+print('Fraud Cases: {}'.format(len(df[df['Class'] == 1])))
+print('Valid Transactions: {}'.format(len(df[df['Class'] == 0])))
+#Coorelation Matrix
+corr = df.corr()
+plt.figure(figsize=(30,40))
+sns.heatmap(corr, annot=True, cmap='coolwarm')
+x = df.drop(columns=['Class'], axis=1)
+y = df['Class']
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_scaler = sc.fit_transform(X)
+x_scaler[-1]
+df.replace([np.inf, -np.inf], np.nan, inplace=True)
+#Model Training
+# train test split
+from sklearn.metrics import classification_report, f1_score
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33)
+from sklearn.linear_model import LogisticRegression
+model = LogisticRegression()
+# training
+model.fit(x_train, y_train)
+# testing
+y_pred = model.predict(x_test)
+print(classification_report(y_test, y_pred))
+print("F1 Score:",f1_score(y_test, y_pred))
+from sklearn.ensemble import RandomForestClassifier
+model = RandomForestClassifier()
+# training
+model.fit(x_train, y_train)
+# testing
+y_pred = model.predict(x_test)
+print(classification_report(y_test, y_pred))
+print("F1 Score:",f1_score(y_test, y_pred))
+import matplotlib.pyplot as plt
+import itertools
+from sklearn import svm, datasets
+from sklearn.metrics import confusion_matrix
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print('Confusion matrix, without normalization')
+    print(cm)
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+    fmt = '.2f' if normalize else 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.tight_layout()
+cnf_matrix = confusion_matrix(y_test,y_pred)
+plot_confusion_matrix(cnf_matrix,classes=[0,1])
+plt.show()
